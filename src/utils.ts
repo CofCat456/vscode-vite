@@ -2,30 +2,18 @@ import http from 'http'
 import https from 'https'
 import { join } from 'path'
 import fs from 'fs'
+import portfinder from 'portfinder'
 import { Config } from './config'
 import { ctx } from './Context'
-
-function isPortFree(port: number) {
-  return new Promise((resolve) => {
-    const server = http.createServer()
-      .listen(port, () => {
-        server.close()
-        resolve(true)
-      })
-      .on('error', () => {
-        resolve(false)
-      })
-  })
-}
 
 export function timeout(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-export async function tryPort(start = 4000): Promise<number> {
-  if (await isPortFree(start))
-    return start
-  return tryPort(start + 1)
+export async function getPort(start = 4000): Promise<number> {
+  portfinder.setBasePort(start)
+  const port = await portfinder.getPortPromise()
+  return port
 }
 
 export function ping(url: string) {
