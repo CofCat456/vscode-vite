@@ -2,7 +2,7 @@ import http from 'http'
 import https from 'https'
 import { join } from 'path'
 import fs from 'fs'
-import portfinder from 'portfinder'
+import os from 'os'
 import { Config } from './config'
 import { ctx } from './Context'
 
@@ -10,10 +10,15 @@ export function timeout(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-export async function getPort(start = 4000): Promise<number> {
-  portfinder.setBasePort(start)
-  const port = await portfinder.getPortPromise()
-  return port
+export function getHost() {
+  const interfaces = os.networkInterfaces()
+
+  for (const ifaceDetails of Object.values(interfaces)) {
+    if (ifaceDetails != null && ifaceDetails.some(iface => iface.family === 'IPv6' && !iface.internal))
+      return '::1'
+  }
+
+  return '127.0.0.1'
 }
 
 export function ping(url: string) {
